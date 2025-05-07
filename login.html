@@ -20,10 +20,12 @@
 
         <form id="loginForm" action="submit-login.php" method="post">
             <label for="email">Email</label>
-            <input type="email" id="email"name="email" placeholder="Enter your email" required />
+            <input type="email" id="email"name="email" placeholder="Enter your email"/>
+            <div id="emailError" class="error-message" role="alert"></div>
 
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+            <input type="password" id="password" name="password" placeholder="Enter your password"/>
+            <div id="passwordError" class="error-message" role="alert"></div>
 
             <button type="submit">
                 Login
@@ -38,5 +40,96 @@
             <a href="signup.html">Sign Up</a>
         </div>
     </div>
+    
+    <script>
+        const form = document.getElementById('loginForm');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+
+        //function to clear email error messages
+        function clearEmailError() {
+            emailError.textContent = '';
+        }
+
+        //function to clear password error messages
+        function clearPasswordError() {
+            passwordError.textContent = '';
+        }
+
+        //function to validate email
+        function validateEmail() {
+            clearEmailError();
+            email.classList.remove('input-error', 'input-success')
+
+            if (email.value.trim() === '') {
+                emailError.textContent = "Email is required";
+                email.classList.add('input-error');
+                return false;
+            }
+
+            if (!/\S+@\S+\.\S+/.test(email.value)) {
+                emailError.textContent = "Please enter a valid email address";
+                email.classList.add('input-error');
+                return false;
+            }
+
+            email.classList.add('input-success');
+            return true;
+        }
+
+        //function to validate password
+        function validatePassword() {
+            clearPasswordError();
+            password.classList.remove('input-error', 'input-success')
+
+            if (password.value.trim() === '') {
+                passwordError.textContent = "Password is required";
+                password.classList.add('input-error');
+                return false;
+            }
+
+            if (password.value.length < 8) {
+                passwordError.textContent = "Password must be at least 8 characters long";
+                password.classList.add('input-error');
+                return false
+            }
+
+            password.classList.add('input-success');
+            return true;
+        }
+
+        //function to handle real-time validation
+        email.addEventListener('input', function(){
+            validateEmail();
+        });
+
+        password.addEventListener('input', function(){
+            validatePassword();
+        });
+
+        form.addEventListener('submit', function(event){
+            //clear previous
+            clearEmailError();
+            clearPasswordError();
+
+            //validate fields
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+
+            //Focus on the first invalid input
+            if (!isEmailValid) {
+                email.focus();
+            } else if (!isPasswordValid) {
+                password.focus();
+            }
+
+            //prevent form submission if there are validation errors
+            if (!isEmailValid || !isPasswordValid) {
+                event.preventDefault();
+            }
+        });
+    </script>
 </body>
 </html>

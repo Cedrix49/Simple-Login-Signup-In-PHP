@@ -1,5 +1,10 @@
 <?php
 
+$username = '';
+$password = '';
+$email = '';
+$confirmPassword = '';
+
 require_once 'conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -7,9 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
+    $confirmPassword = trim($_POST['confirmPassword']);
 
     //validate the form data
-    if (!empty($username) && !empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!empty($username) && !empty($email) && !empty($password) && !empty($confirmPassword) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
         // Check if the email already exists in the database
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
@@ -18,27 +24,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if ($stmt->num_rows > 0) {
             echo "User already exists!";
-            $stmt->close();
             exit;
         }
-        $stmt->close();
+        $stmt->close(); 
 
-        //hashed password
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        if ($confirmPassword !== $password) {
+            echo "Password do not match";
+            exit;
+        } 
+        
+        //Hashed password   
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);    
 
-        //insert new user
+        //Insert new user
         $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $username, $email, $hashedPassword);
         if ($stmt->execute()) {
             echo "Registration successful!";
-            //navigate to login page
-            header("Location: /login.php");
+            header("Location: login.html");
+            exit;
         } else {
             echo "Error: ".$stmt->error;
         }
+        $stmt->close();
     } else {
         echo "Please fill in all fields correctly!";
     }   
 }
-
 ?>

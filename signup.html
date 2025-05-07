@@ -15,13 +15,20 @@
 
         <form id="signupForm" action="register.php" method="post">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Enter your name" required />
+            <input type="text" id="username" name="username" placeholder="Enter your name" />
+            <div id="usernameError" class="error-message" role="alert"></div>
 
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Enter your valid email" required />
+            <input type="email" id="email" name="email" placeholder="Enter your valid email" />
+            <div id="emailError" class="error-message" role="alert"></div>
 
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+            <input type="password" id="password" name="password" placeholder="Enter your password" />
+            <div id="passwordError" class="error-message" role="alert"></div>
+
+            <label for="password">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" />
+            <div id="confirmPasswordError" class="error-message" role="alert"></div>
 
             <button type="submit">Sign Up</button>
         </form>
@@ -33,55 +40,127 @@
     </div>
 
     <script>
-        // JavaScript to handle form submission and validation can be added here
-        document.getElementById('signupForm').addEventListener('submit', function(event) {
-            // Prevent the default form submission
-            event.preventDefault();
-            // Perform validation or any other logic here
-            // For example, you can get the values of the form fields
-            const password = document.getElementById('password').value;
-            const email = document.getElementById('email').value;
-            const username = document.getElementById('username').value;
-            // You can add your validation logic here
-            const isValidEmail = (email) => {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return re.test(String(email).toLowerCase());
-            };
+        const form = document.getElementById('signupForm');
+        const email = document.getElementById('email');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
 
-            if (!isValidEmail(email)) {
-                alert('Please enter a valid email address.');
-                return;
+        //function to clear email error messages
+        function clearEmailError() {
+            emailError.textContent = '';
+        }
+
+        //function to clear password error messages
+        function clearPasswordError() {
+            passwordError.textContent = '';
+        }
+
+        //function to clear confirm password error messages
+        function clearConfirmPasswordError() {
+            confirmPasswordError.textContent = '';
+        }
+
+        //function to validate email
+        function validateEmail() {
+            clearEmailError();
+            email.classList.remove('input-error', 'input-success');
+
+            if (email.value.trim() === '') {
+                emailError.textContent = "Email is required"
+                email.classList.add('input-error');
+                return false;
             }
 
-            if (password.length < 6) {
-                alert('Password must be at least 6 characters long.');
-                return;
+            if (!/\S+@\S+\.\S+/.test(email.value)) {
+                emailError.textContent = "Please enter a valid email address";
+                email.classList.add('input-error');
+                return false;
             }
 
-            if (username.length < 3) {
-                alert('Username must be at least 3 characters long.');
-                return;
+            email.classList.add('input-success');
+            return true;
+        }
+
+        //function to validate password
+        function validatePassword() {
+            clearPasswordError();
+            password.classList.remove('input-error', 'input-success');
+
+            if (password.value.trim() === '') {
+                passwordError.textContent = "Password is required";
+                password.classList.add('input-error');
+                return false;
+            }
+
+            if (password.value.length < 8) {
+                passwordError.textContent = "Password must at least be 8 characters long"
+                password.classList.add('input-error');
+                return false;
+            }
+
+            password.classList.add('input-success');
+            return true;
+        }
+
+        //function to validate confirm password
+        function validateConfirmPassword() {
+            clearConfirmPasswordError();
+            confirmPassword.classList.remove('input-error', 'input-success');
+
+            if (confirmPassword.value !== password.value) {
+                confirmPasswordError.textContent = "Password do not match";
+                confirmPassword.classList.add('input-error');
+                return false;
+            } else {
+                confirmPassword.classList.add('input-success');
+                return true;
             }
             
-            if (errors.length > 0) {
-                errorHtml = "<ul>";
-                errors.forEach(function(error) {
-                    errorHtml += "<li>" + error + "</li>";
-                });
-                errorHtml += "</ul>";
-
-            // Display error messages
-            if (!errorMessages) {
-                errorMessages = document.createElement("div");
-                errorMessages.id = "errorMessages";
-                document.querySelector("form").insertBefore(errorMessages, document.querySelector("form").firstChild);
-            }
-            errorMessages.innerHTML = errorHtml;
-        } else {
-            // If no errors, submit the form
-            this.submit();
         }
-        });
+
+        //function to handle real-time validation
+        email.addEventListener('input', function(){
+            validateEmail();
+        })
+
+        password.addEventListener('input', function(){
+            validatePassword();
+        })
+
+        confirmPassword.addEventListener('input', function(){
+            validateConfirmPassword();
+        })
+
+        form.addEventListener('submit', function(event){
+            clearEmailError();
+            clearPasswordError();
+
+            //validate fields
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            const isConfirmPassword = validateConfirmPassword();
+
+            //focus on the first invalid input
+            if (!isEmailValid) {
+                email.focus();
+            }
+            
+            if (!isPasswordValid) {
+                password.focus();
+            }
+
+            if (!isConfirmPassword) {
+                confirmPassword.focus();
+            }
+
+            if (!isEmailValid || !isPasswordValid || !isConfirmPassword) {
+                event.preventDefault();
+            }
+        })
     </script>
+
 </body>
 </html>

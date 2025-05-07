@@ -1,5 +1,8 @@
 <?php
 
+$email = '';
+$password = '';
+
 require_once 'conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -32,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             echo "No user found with that email!";
         } 
-
         $stmt->close();
 
     } else {
