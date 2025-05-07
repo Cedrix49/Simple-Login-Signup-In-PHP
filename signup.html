@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Signup</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="login-signup-header">
+            <h1>Sign Up</h1>
+            <p>Please create your account by filling out the form below.</p>
+        </div>
+
+        <form id="signupForm" action="register.php" method="post">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter your name" required />
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your valid email" required />
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required />
+
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <div class="login-signup-footer">
+            <p>Already have an account?</p>
+            <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle form submission and validation can be added here
+        document.getElementById('signupForm').addEventListener('submit', function(event) {
+            // Prevent the default form submission
+            event.preventDefault();
+            // Perform validation or any other logic here
+            // For example, you can get the values of the form fields
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            // You can add your validation logic here
+            const isValidEmail = (email) => {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(String(email).toLowerCase());
+            };
+
+            if (!isValidEmail(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return;
+            }
+
+            if (username.length < 3) {
+                alert('Username must be at least 3 characters long.');
+                return;
+            }
+            
+            if (errors.length > 0) {
+                errorHtml = "<ul>";
+                errors.forEach(function(error) {
+                    errorHtml += "<li>" + error + "</li>";
+                });
+                errorHtml += "</ul>";
+
+            // Display error messages
+            if (!errorMessages) {
+                errorMessages = document.createElement("div");
+                errorMessages.id = "errorMessages";
+                document.querySelector("form").insertBefore(errorMessages, document.querySelector("form").firstChild);
+            }
+            errorMessages.innerHTML = errorHtml;
+        } else {
+            // If no errors, submit the form
+            this.submit();
+        }
+        });
+    </script>
+</body>
+</html>
