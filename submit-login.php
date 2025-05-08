@@ -1,45 +1,54 @@
 <?php
-
-$email = '';
-$password = '';
-
 require_once 'conn.php';
+session_start();
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    //Get the form data
+$email = $password = '';
+$error = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Get the data from the form
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
-    //validate the form data
-    if (!empty($email) && !empty($password) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        //Check if the email exists in the database
+    // Validate the data
+    if (empty($email)) {
+        $error['email'] = 'Email is required';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error['email'] = 'Invalid email format';
+    }
+
+    if (empty($password)) {
+        $error['password'] = 'Password is required';
+    } elseif (strlen($password) < 6) {
+        $error['password'] = 'Password must be at least 6 characters long';
+    }
+
+    if (empty($error)) {
+        // Check if the user exists
         $stmt = $conn->prepare("SELECT id, password FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
-        $stmt->store_result();
+        $result = $stmt->get_result();
 
-        //Check if the user exists
-        if ($stmt->num_rows > 0) {
-            $stmt->bind_result($id, $hashedPassword);
-            $stmt->fetch();
-            //Verify the password
-            if (password_verify($password, $hashedPassword)) {
-                //Start the session
-                session_start();
-                $_SESSION['user_id'] = $id;
-                $_SESSION['email'] = $email;
-                echo "Login successful! Welcome back";
-            } else {
-                echo "Invalid password!";
-            }
+        $user = $result->fetch_assoc();
+
+        if ($user && password_verify($password, $user['password'])) {
+            // Login successful
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['email'] = $email;
+            echo "Login successfully";
+            exit;
         } else {
-            echo "No user found with that email!";
-        } 
-        $stmt->close();
+            echo "Login failed";
+            exit;
+        }
 
+        $stmt->close();
     } else {
-        echo "Please fill in all fields correctly!";
-        exit;
+        print_r($error);
     }
+} else {
+    echo "Invalid request method.";
+    exit;
 }
 ?>

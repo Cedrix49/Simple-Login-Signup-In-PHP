@@ -4,6 +4,7 @@ $username = '';
 $password = '';
 $email = '';
 $confirmPassword = '';
+$error = [];
 
 require_once 'conn.php';
 
@@ -13,42 +14,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
     $confirmPassword = trim($_POST['confirmPassword']);
+    
+    //validate the data
+    if(empty($username)) {
+        $error[] = "Username is required";
+    } elseif (strlen($username) < 3) {
+        $error[] = "Username must at least be 3 characters";
+    }
 
-    //validate the form data
-    if (!empty($username) && !empty($email) && !empty($password) && !empty($confirmPassword) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        // Check if the email already exists in the database
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->store_result();
+    if(empty($email)) {
+        $error[] = "Email is required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error[] = "Email is invalid format";
+    }
 
-        if ($stmt->num_rows > 0) {
-            echo "User already exists!";
-            exit;
-        }
-        $stmt->close(); 
+    if(empty($password)) {
+        $error[] = "Password is required";
+    } elseif (strlen($password) < 8) {
+        $error[] = "Password must be at least 8 characters long";
+    }
 
-        if ($confirmPassword !== $password) {
-            echo "Password do not match";
-            exit;
-        } 
-        
-        //Hashed password   
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);    
+    if($password !== $confirmPassword) {
+        $error[] = "Passwords do not match";
+    }
 
-        //Insert new user
-        $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $username, $email, $hashedPassword);
-        if ($stmt->execute()) {
-            echo "Registration successful!";
-            header("Location: login.html");
-            exit;
-        } else {
-            echo "Error: ".$stmt->error;
-        }
-        $stmt->close();
+    //Prepare the query
+    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    //fetch users
+    $existingUser = $result->fetch_assoc();
+
+    if($existingUser) {
+        echo "User already exist";
+        exit;
+    }
+
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+    //Insert new users 
+    $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+    $stmt->bind_param('sss', $username, $email, $hashedPassword);
+
+    if($stmt->execute()) {
+        header("Location: login.html?successful");
+        exit;
     } else {
-        echo "Please fill in all fields correctly!";
-    }   
+        echo "Error: " . $stmt->error;
+    }
+
+    $stmt->close();
 }
 ?>
